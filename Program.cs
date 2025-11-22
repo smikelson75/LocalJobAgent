@@ -1,22 +1,34 @@
-using LocalService;
+using LocalJobAgent.Services;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddGrpc();
 
 if (OperatingSystem.IsWindows())
 {
-  builder.Services.AddWindowsService(options =>
+  builder.Host.UseWindowsService(options =>
   {
-    options.ServiceName = "LocalService";
+    options.ServiceName = "LocalJobAgent";
   });
-
   LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(builder.Services);
 }
 else if (OperatingSystem.IsLinux())
 {
-  builder.Services.AddSystemd();
+  // Only use Systemd if not running in a container (Docker uses Console lifetime)
+  var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+  if (!isDocker)
+  {
+    builder.Host.UseSystemd();
+  }
 }
 
-builder.Services.AddHostedService<Worker>(); var host = builder.Build();
-host.Run();
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+app.MapGrpcService<JobService>();
+app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+
+app.Run();

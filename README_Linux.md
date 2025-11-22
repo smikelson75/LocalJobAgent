@@ -1,6 +1,6 @@
-# LocalService on Linux
+# LocalJobAgent on Linux
 
-This guide explains how to deploy and run the LocalService application as a systemd service on Linux.
+This guide explains how to deploy and run the LocalJobAgent application as a systemd service on Linux.
 
 ## Prerequisites
 
@@ -19,29 +19,29 @@ dotnet publish -c Release -r linux-x64 --self-contained false -o ./publish-linux
 
 ## 2. Deploy to Server
 
-1.  Copy the contents of the `./publish-linux` directory to your Linux server. A common location is `/opt/localservice`.
+1.  Copy the contents of the `./publish-linux` directory to your Linux server. A common location is `/opt/localjobagent`.
 
     ```bash
-    sudo mkdir -p /opt/localservice
-    sudo cp -r ./publish-linux/* /opt/localservice/
-    sudo chmod +x /opt/localservice/LocalService
+    sudo mkdir -p /opt/localjobagent
+    sudo cp -r ./publish-linux/* /opt/localjobagent/
+    sudo chmod +x /opt/localjobagent/LocalJobAgent
     ```
 
 ## 3. Create Systemd Service
 
 Create a systemd service file to manage the application.
 
-1.  Create the file `/etc/systemd/system/localservice.service`:
+1.  Create the file `/etc/systemd/system/localjobagent.service`:
 
     ```bash
-    sudo nano /etc/systemd/system/localservice.service
+    sudo nano /etc/systemd/system/localjobagent.service
     ```
 
 2.  Paste the following configuration:
 
     ```ini
     [Unit]
-    Description=Local Service Worker
+    Description=Local Job Agent Worker
     After=network.target
 
     [Service]
@@ -49,10 +49,10 @@ Create a systemd service file to manage the application.
     Type=notify
     
     # Adjust paths if you installed elsewhere or are using a self-contained app
-    ExecStart=/usr/bin/dotnet /opt/localservice/LocalService.dll
-    # If self-contained: ExecStart=/opt/localservice/LocalService
+    ExecStart=/usr/bin/dotnet /opt/localjobagent/LocalJobAgent.dll
+    # If self-contained: ExecStart=/opt/localjobagent/LocalJobAgent
     
-    WorkingDirectory=/opt/localservice
+    WorkingDirectory=/opt/localjobagent
     User=www-data
     Restart=always
     RestartSec=10
@@ -77,19 +77,19 @@ Create a systemd service file to manage the application.
 2.  Enable the service to start on boot:
 
     ```bash
-    sudo systemctl enable localservice
+    sudo systemctl enable localjobagent
     ```
 
 3.  Start the service immediately:
 
     ```bash
-    sudo systemctl start localservice
+    sudo systemctl start localjobagent
     ```
 
 4.  Check the status:
 
     ```bash
-    sudo systemctl status localservice
+    sudo systemctl status localjobagent
     ```
 
 ## 5. Viewing Logs
@@ -99,18 +99,15 @@ Since the application is integrated with systemd, standard output is captured by
 To view logs:
 
 ```bash
+sudo journalctl -u localjobagent -f
+```
+
+```bash
 # View logs in real-time
 sudo journalctl -u localservice -f
 
 # View all logs for the service
 sudo journalctl -u localservice
-```
-
-Additionally, the service still writes to its own log file as configured in `Worker.cs`.
-Check the `service_log.txt` in the working directory:
-
-```bash
-tail -f /opt/localservice/service_log.txt
 ```
 
 ## 6. Running with Docker
@@ -126,31 +123,24 @@ You can also run the service in a Docker container to test the application logic
 2.  **Run the Container**:
 
     ```bash
-    docker run -d --name localservice-test localservice
+    docker run -d --name localservice-test -p 8080:8080 -p 8081:8081 localservice
     ```
 
-3.  **View Logs**:
+3.  **Test the Service**:
 
-    To see the logs written to the file inside the container:
+    You can use `grpcurl` to test the service running in the container:
 
     ```bash
-    docker exec localservice-test cat /app/service_log.txt
+    grpcurl -plaintext -d '{"message": "Hello Docker"}' localhost:8080 echo.Echo/Send
     ```
 
-    To follow the logs:
-
-    ```bash
-    docker exec -it localservice-test tail -f /app/service_log.txt
-    ```
-
-    **Note on Systemd/Journalctl**:
-    Standard Docker containers do not run `systemd`, so `journalctl` is not available inside the container. However, Docker captures the standard output (which is what `journalctl` would capture on a server). To view these logs:
+4.  **View Logs**:
 
     ```bash
     docker logs localservice-test
     ```
 
-4.  **Stop and Remove**:
+5.  **Stop and Remove**:
 
     ```bash
     docker stop localservice-test

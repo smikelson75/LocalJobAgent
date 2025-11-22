@@ -5,16 +5,24 @@
 - [x] Scaffold the Project
 
 - [x] Customize the Project
+  - Refactored EchoService to JobService.
+  - Created Job.proto with TriggerJob method.
+  - Updated TestClient to use JobClient.
+  - Configured LocalService to exclude TestClient source files.
 
 - [x] Install Required Extensions
 
 - [x] Compile the Project
+  - Verified solution builds successfully with `dotnet build`.
 
 - [x] Create and Run Task
+  - Added `run-service` and `run-client` tasks to tasks.json.
 
 - [x] Launch the Project
 
 - [x] Ensure Documentation is Complete
+  - Created walkthrough.md with a focus on gRPC basics and current functionality.
+  - Updated README.md to reflect the current project state (JobService, Docker, TestClient).
 
 <!--
 ## Execution Guidelines

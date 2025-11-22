@@ -1,24 +1,87 @@
-# LocalService
+# LocalJobAgent
 
-A C# Worker Service that writes a log entry to a file every 5 seconds. It is configured to run as a Windows Service on Windows and a Systemd Service on Linux.
+A .NET 9.0 gRPC Service designed to act as a "Local Agent" for triggering background jobs. It supports running as a Windows Service, a Systemd Daemon (Linux), or in a Docker container.
 
-## Prerequisites
+## Features
 
-- .NET 9.0 SDK or later
+- **gRPC Interface**: Standardized communication using Protocol Buffers.
+- **Cross-Platform Hosting**:
+  - **Windows**: Runs as a native Windows Service.
+  - **Linux**: Runs as a Systemd Daemon.
+  - **Docker**: Ready-to-use `docker-compose` setup.
+- **Test Client**: Includes a dedicated console client for easy testing.
 
-## Building
+## Service Definition
+
+The service implements the following gRPC definition (`Protos/job.proto`):
+
+```protobuf
+service Job {
+  rpc TriggerJob (TriggerJobRequest) returns (TriggerJobReply);
+}
+
+message TriggerJobRequest {
+  string job_name = 1;
+  string args = 2;
+}
+
+message TriggerJobReply {
+  string job_id = 1;
+  string status = 2;
+  string message = 3;
+}
+```
+
+## Getting Started
+
+### Prerequisites
+
+- .NET 9.0 SDK
+
+### Building
 
 ```powershell
 dotnet build
 ```
 
-## Running Locally
+### Running Locally
+
+Start the service:
 
 ```powershell
-dotnet run
+dotnet run --project LocalJobAgent.csproj
 ```
 
-The service will write logs to `bin\Debug\net9.0\service_log.txt` (or `service_log.txt` in the publish directory).
+The service listens on `http://localhost:5000` (HTTP/2).
+
+### Testing with the Client
+
+Open a new terminal and run the included test client:
+
+```powershell
+dotnet run --project TestClient/TestClient.csproj
+```
+
+You should see output confirming the job was triggered:
+```text
+Triggering job 'DataSync'...
+Job ID: <guid>
+Status: Queued
+```
+
+## Running with Docker
+
+To run the service in a Linux container:
+
+```powershell
+docker compose up --build
+```
+
+Then run the client as usual (it connects to `localhost:5000` which is mapped to the container).
+
+## Documentation
+
+For a detailed code walkthrough and architecture explanation, see [walkthrough.md](walkthrough.md).
 
 ## Linux Deployment
 

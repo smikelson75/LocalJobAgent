@@ -7,13 +7,44 @@
 			"command": "dotnet",
 			"args": [
 				"build",
-				"${workspaceFolder}/LocalService.csproj"
+				"${workspaceFolder}/LocalJobAgent.csproj"
 			],
 			"isBackground": false,
 			"problemMatcher": [
 				"$msCompile"
 			],
 			"group": "build"
+		},
+		{
+			"label": "run-service",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"run",
+				"--project",
+				"${workspaceFolder}/LocalJobAgent.csproj"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always"
+			}
+		},
+		{
+			"label": "run-client",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"run",
+				"--project",
+				"${workspaceFolder}/TestClient/TestClient.csproj"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always"
+			},
+			"dependsOn": "build"
 		}
 	]
 }

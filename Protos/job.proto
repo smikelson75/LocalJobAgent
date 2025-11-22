@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "LocalJobAgent";
+
+package job;
+
+service Job {
+  rpc TriggerJob (TriggerJobRequest) returns (TriggerJobReply);
+}
+
+message TriggerJobRequest {
+  string job_name = 1;
+  string args = 2;
+}
+
+message TriggerJobReply {
+  string job_id = 1;
+  string status = 2;
+  string message = 3;
+}
