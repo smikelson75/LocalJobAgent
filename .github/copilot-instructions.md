@@ -45,6 +45,11 @@ DEVELOPMENT RULES:
 - Once the project is created, it is already opened in Visual Studio Code—do not suggest commands to open this project in Visual Studio again.
 - If the project setup information has additional rules, follow them strictly.
 
+COMMIT MESSAGE RULES:
+- Use Conventional Commits format (type(scope): subject).
+- Keep the subject line under 50 characters.
+- Allowed types: feat, fix, docs, style, refactor, test, chore.
+
 FOLDER CREATION RULES:
 - Always use the current directory as the project root.
 - If you are running any terminal commands, use the '.' argument to ensure that the current working directory is used ALWAYS.

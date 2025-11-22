@@ -4,17 +4,26 @@ option csharp_namespace = "LocalJobAgent";
 
 package job;
 
+// The Job service definition.
 service Job {
+  // Triggers a job execution.
   rpc TriggerJob (TriggerJobRequest) returns (TriggerJobReply);
 }
 
+// The request message containing the job details.
 message TriggerJobRequest {
+  // The name of the job to trigger.
   string job_name = 1;
+  // The arguments to pass to the job.
   string args = 2;
 }
 
+// The response message containing the job status.
 message TriggerJobReply {
+  // The unique identifier for the triggered job.
   string job_id = 1;
+  // The current status of the job (e.g., "Queued").
   string status = 2;
+  // A descriptive message about the job status.
   string message = 3;
 }
